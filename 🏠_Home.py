@@ -1,6 +1,5 @@
-# Home.py
-#  
-
+# 🏠_Home.py
+#
 # ----------------------------------------------------------------------------------
 # This is a multi-page Streamlit (https://streamlit.io/) app built from
 # https://github.com/SummittDweller/streamlit-multipage-template.  It leverages
@@ -73,10 +72,13 @@ default_path = '/Users/mcfatem/Library/CloudStorage/OneDrive-GrinnellCollege/Dig
 
 
 # Page code goes here...
+#------------------------------------------------------------------------------
 
 def main( ):
     
     # Initialize the session_state, including some CONSTANTs
+    if not state('working_dir'):
+        st.session_state.working_dir = default_path
     if not state('html_path'):
         st.session_state.html_path = False
 
@@ -108,8 +110,8 @@ def main( ):
         st.write(traceback.print_exc( ))
         pass
 
-    utils.show_session( )
-    utils.show_code(main)
+    show_session( )
+    show_code(main)
 
 
 # Other functions here...
@@ -121,6 +123,6 @@ def other_functions( ):
 # Config the page and execute it but not when loading!
 # ----------------------------------------------------------------------
 if __name__ == "__main__":
-    st.set_page_config(page_title="Home",page_icon=":home:")
+    st.set_page_config(page_title="Home", page_icon="🏠")
     main( )
 
