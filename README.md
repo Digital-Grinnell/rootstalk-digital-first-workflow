@@ -6,6 +6,16 @@ Key resources:
  - https://github.com/SummittDweller/geocaching-with-Streamlit.git  
  - https://discuss.streamlit.io/t/multi-page-label-presentation/36523/7
 
+# Regex Testing
+
+The `Regex Workbench` extension seems to crash _VSCode_ so it has been removed.  Use https://regex101.com/ to build/test regex experssions instead!  
+
+
+# Rootstalk Image Restore
+
+Mikey's work on the Streamlit **Roostalk Image Restore** project is at https://github.com/mjoconnor52/rootstalk-image-restore.  Forked the `main` branch ONLY on 30-Apr-2024 to https://github.com/Digital-Grinnell/rootstalk-image-restore.    
+
+
 <!-- Progress Marker !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
 <div style="border: 3px solid red; padding: 10px; margin: 10px; font-weight: bold; font-size: large;text-align: center;">
 <span>Attention! The remainder of this document is original README.md content from other projects.</span>

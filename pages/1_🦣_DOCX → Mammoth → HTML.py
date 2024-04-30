@@ -1,9 +1,11 @@
-# Page_1.py
+# pages/1_🦣_DOCX → Mammoth → HTML.py
 #
 
 import streamlit as st
 from utils import *
-import glob, os, subprocess 
+import glob, os, subprocess, re 
+
+pattern = '^\/(.+)\/(.+)\.docx$'
 
 # Page code goes here...
 #-----------------------------------------------------------------------
@@ -33,12 +35,14 @@ def run_mammoth( ):
 
     filenames = [ ]
     for file in files: 
-        no_path = file.removeprefix(local_path)
-        filenames.append(no_path)
+        no_path = file.removeprefix(local_path)     # remove the known parent directory for better display
+        found = re.search(pattern, no_path)         # don't include .docx that are IN the directory,
+        if found:                                   #   only those from subdirs!
+          filenames.append(no_path)
     
     # Now the form...
-    with st.form("select_docx"):
-        selected = st.selectbox('Select a Word Document', filenames)[1:]   # remove leading slash or os.path.join will FAIL
+    with st.form("select_docx"):                                           # remove leading slash or 
+        selected = st.selectbox('Select a Word Document', filenames)[1:]   #   os.path.join will FAIL
     
         # Every form must have a submit button.
         submitted = st.form_submit_button("Submit")
@@ -61,7 +65,7 @@ def run_mammoth( ):
             st.write(f"Running **mammoth** on `{dir}/{doc}` to create `{html_path}`.")
 
             # With a spinner widget...
-            with st.spinner("**Mammoth**'s are not quick, wait for it..."):
+            with st.spinner("**Mammoth**s are not quick, wait for it..."):
                 result = subprocess.run(f"mammoth '{dir}/{doc}' --output-dir='{dir}/converted' --style-map=rootstalk-custom-style.map", capture_output=True, text=True, shell=True, executable="/bin/bash")
 
             if result.stdout: 
@@ -83,12 +87,15 @@ def run_mammoth( ):
 
 if __name__ == "__main__":
 
-    st.set_page_config(page_title="DOCX -> Mammoth -> HTML", page_icon="📂")
+    page_name = "DOCX → Mammoth → HTML"
+
+    st.set_page_config(page_title=page_name, page_icon="🦣")
     
     # st.markdown("# Page 1 Markdown")
     # st.write("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
     
-    st.sidebar.header("DOCX -> Mammoth -> HTML")
+    st.sidebar.header(page_name)
+
     
     # st.session_state.status = "This is session_state.status from Page 1"
 

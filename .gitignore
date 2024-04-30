@@ -118,3 +118,4 @@ frontend/cypress/snapshots/linux/1x
 # Custom
 ########################################################################
 document/images/
+.env
