@@ -1,3 +1,4 @@
+p[style-name='Normal'] => p.Normal-Paragraph
 p[style-name='Primary-Title'] => h1.Primary-Title 
 p[style-name='Byline'] => p.Byline
 p[style-name='Article-Type'] => p.Article-Type

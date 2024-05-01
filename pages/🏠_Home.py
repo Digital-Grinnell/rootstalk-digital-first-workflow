@@ -16,58 +16,13 @@ import streamlit as st
 from streamlit.logger import get_logger
 from utils import *
 import traceback
+import constants as c
 
-
-# Define some globals...
-# ---------------------------------------------------------------------
-
-year = '2024'
-term = 'spring'
-issue = f"{year}-{term}"
 
 LOGGER = get_logger(__name__)
 
-converted_pattern = r"(\d{4})-(spring|fall)/(.+)/converted/(.+)\.html"
-file_pattern = r"^\d{4}-(spring|fall)\.md$"
-year_term_pattern = r"(\d{4})-(spring|fall)"
-image_pattern = r".{3}\(.+/image/(.+)\)$"
-reference_pattern = r"\[(\d+)]"
-endnote_pattern = r"endnote-(\d+)"
-
-fm_template = '---\n' \
-              'index: \n' \
-              'azure_dir: \n' \
-              'articleIndex: \n' \
-              '_title: \n' \
-              'subtitle: \n' \
-              'byline: \n' \
-              'byline2: \n' \
-              'categories: \n' \
-              '  - category\n'  \
-              'tags: \n' \
-              '  - \n'  \
-              'header_image: \n' \
-              '  filename: \n' \
-              '  alt_text: \n' \
-              'contributors: \n' \
-              '  - role: author \n' \
-              '    name: \n' \
-              '    headshot: \n' \
-              '    caption: \n' \
-              '    bio: " "\n' \
-              'description: \n' \
-              'date: \n' \
-              'draft: false \n' \
-              'no_leaf_bug: false\n' \
-              "---\n"
-
-default_path = '/Users/mcfatem/Library/CloudStorage/OneDrive-GrinnellCollege/Digital-Versions'
-
-aIndex = 0
-open_shortcode = "{{%"
-close_shortcode = "%}}"
-
-frontmatter = fm_template       # initialize global 'frontmatter' value
+if not state('aFrontmatter'):
+    st.session_state.aFrontmatter = c.fm_template    # initialize 'aFrontmatter' in our session state
 
 
 # Page code goes here...
@@ -77,9 +32,17 @@ def main( ):
     
     # Initialize the session_state, including some CONSTANTs
     if not state('working_dir'):
-        st.session_state.working_dir = default_path
+        st.session_state.working_dir = c.default_path
     if not state('html_path'):
         st.session_state.html_path = False
+    if not state('aIndex'):
+        st.session_state.aIndex = 1
+    if not state('aName'):
+        st.session_state.aName = False
+    if not state('aFrontmatter'):
+        st.session_state.aFrontmatter = False
+    if not state('show_markdown'):
+        st.session_state.show_markdown = False
 
     # Explain the OneDrive prep required before running this app...
     
@@ -94,25 +57,12 @@ def main( ):
     for paragraph in md:
         st.write(paragraph)
 
-    # st.sidebar.success("This is sidebar.success in Home.py!")
-
-    # st.markdown(
-    #     """
-    #     **This is some lengthy Markdown...
-    
-    #     .............................................................
-    #     .............................................................
-    #     .............................................................
-    #     .............................................................
-    #     """
-    # )
-
     # Wrap all of the processing in a nice try...except
     try:
 
         # Home code here
         pass
- 
+
     # Now, handle all exceptions gracefully
     except Exception as e:
         st.write(traceback.print_exc( ))
@@ -132,5 +82,6 @@ def other_functions( ):
 # ----------------------------------------------------------------------
 if __name__ == "__main__":
     st.set_page_config(page_title="Home", page_icon="🏠")
+    menu( )
     main( )
 

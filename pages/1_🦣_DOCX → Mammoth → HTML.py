@@ -4,8 +4,9 @@
 import streamlit as st
 from utils import *
 import glob, os, subprocess, re 
+import constants as c
 
-pattern = '^\/(.+)\/(.+)\.docx$'
+pattern = "^\/(.+)\/(.+)\.docx$"
 
 # Page code goes here...
 #-----------------------------------------------------------------------
@@ -38,7 +39,7 @@ def run_mammoth( ):
         no_path = file.removeprefix(local_path)     # remove the known parent directory for better display
         found = re.search(pattern, no_path)         # don't include .docx that are IN the directory,
         if found:                                   #   only those from subdirs!
-          filenames.append(no_path)
+            filenames.append(no_path)
     
     # Now the form...
     with st.form("select_docx"):                                           # remove leading slash or 
@@ -95,9 +96,10 @@ if __name__ == "__main__":
     # st.write("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
     
     st.sidebar.header(page_name)
-
     
     # st.session_state.status = "This is session_state.status from Page 1"
 
+    menu( )
+    
     # Call main( )
     main( )
