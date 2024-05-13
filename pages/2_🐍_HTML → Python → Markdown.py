@@ -242,10 +242,10 @@ def parse_post_mammoth_converted_html(html_file, path):
             article_type = soup.find("p", class_= "Article-Type")
             hero_image = soup.find("img", class_= "Hero-Image")
 
-            c_role = soup.findall("p", class_= "Contributor-Role")
-            c_name = soup.findall("p", class_= "Contributor-Name")
-            c_bio = soup.findall("p", class_= "Contributor-Bio")
-            c_headshot = soup.findall("img", class_= "Contributor-Headshot")
+            c_role = soup.findAll("p", class_= "Contributor-Role")
+            c_name = soup.findAll("p", class_= "Contributor-Name")
+            c_bio = soup.findAll("p", class_= "Contributor-Bio")
+            c_headshot = soup.findAll("img", class_= "Contributor-Headshot")
 
             # Drop found elements into the aFrontmatter and remove them from the soup...
 
@@ -278,34 +278,51 @@ def parse_post_mammoth_converted_html(html_file, path):
                     st.error(f"Upload of image to {path}/{image_name} to Azure failed!")
 
             # Contributor logic only expects ONE contributor for now, add more later!
+            c_blocks = 0
 
             if c_role:
-                frontmatter = frontmatter.replace("  - role: author", f"  - role: {c_role.contents[0]}")
-                c_role.decompose( )
+                c_blocks = len(c_role) 
+                if c_blocks > 1:
+                    st.warning(f"{c_blocks} contributor roles found.  Current logic supports only ONE!")
+                for b in c_role:
+                    frontmatter = frontmatter.replace("  - role: author", f"  - role: {b.contents[0]}")
+                    b.decompose( )
 
             if c_name:
-                frontmatter = frontmatter.replace("    name: ", f"    name: {c_name.contents[0]}")
-                c_name.decompose( )
+                c_blocks = len(c_name) 
+                if c_blocks > 1:
+                    st.warning(f"{c_blocks} contributor names found.  Current logic supports only ONE!")
+                for b in c_name:
+                    frontmatter = frontmatter.replace("    name: ", f"    name: {b.contents[0]}")
+                    b.decompose( )
 
             if c_bio:
-                frontmatter = frontmatter.replace("    bio: ", f"    bio: \"{c_bio.contents[0]}\"")
-                c_bio.decompose( )
+                c_blocks = len(c_bio) 
+                if c_blocks > 1:
+                    st.warning(f"{c_blocks} contributor bios found.  Current logic supports only ONE!")
+                for b in c_bio:
+                    frontmatter = frontmatter.replace("    bio: ", f'    bio: "{b.contents[0]}"')
+                    b.decompose( )
 
             if c_headshot:
-                if 'src' in c_headshot.attrs:
-                    image_name = c_headshot.attrs['src']
-                    c_headshot.decompose( )       # get rid of the <img> tag         
-                else:    
-                    image_name = c_headshot.next.attrs['src']
-                    c_headshot.next.decompose( )  # get rid of the <img> tag
+                c_blocks = len(c_headshot) 
+                if c_blocks > 1:
+                    st.warning(f"{c_blocks} contributor headshots found.  Current logic supports only ONE!")
+                for b in c_headshot:
+                    if 'src' in b.attrs:
+                        image_name = b.attrs['src']
+                        b.decompose( )       # get rid of the <img> tag         
+                    else:    
+                        image_name = b.next.attrs['src']
+                        b.next.decompose( )  # get rid of the <img> tag
 
-                image_path = f"{state('aName')}-{image_name}"
-                frontmatter = frontmatter.replace("    headshot: ", f"    headshot: {image_path}")
+                    image_path = f"{state('aName')}-{image_name}"
+                    frontmatter = frontmatter.replace("    headshot: ", f"    headshot: {image_path}")
 
-                # Upload the headshot image to Azure
-                url = upload_to_azure(image_path, path + "/" + image_name)
-                if not url:
-                    st.error(f"Upload of image to {path}/{image_name} to Azure failed!")
+                    # Upload the headshot image to Azure
+                    url = upload_to_azure(image_path, path + "/" + image_name)
+                    if not url:
+                        st.error(f"Upload of image to {path}/{image_name} to Azure failed!")
 
 
             # Now, find ALL and rewrite remaining "inline" styles...

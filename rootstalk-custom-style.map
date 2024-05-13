@@ -15,3 +15,7 @@ p[style-name='List Paragraph'] => p.List-Paragraph
 p[style-name='Caption'] => figcaption.Caption
 p[style-name='Audio-Caption'] => figcaption.Caption
 p[style-name='Attribution'] => p.Attribution
+p[style-name='Contributor-Role'] => p.Contributor-Role
+p[style-name='Contributor-Name'] => p.Contributor-Name
+p[style-name='Contributor-Bio'] => p.Contributor-Bio
+p[style-name='Contributor-Headshot'] => img.Contributor-Headshot

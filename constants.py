@@ -36,7 +36,7 @@ fm_template = '---\n' \
               '    name: \n' \
               '    headshot: \n' \
               '    caption: \n' \
-              '    bio: " "\n' \
+              '    bio: \n' \
               'description: \n' \
               'date: \n' \
               'draft: false \n' \
