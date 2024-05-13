@@ -19,3 +19,4 @@ p[style-name='Contributor-Role'] => p.Contributor-Role
 p[style-name='Contributor-Name'] => p.Contributor-Name
 p[style-name='Contributor-Bio'] => p.Contributor-Bio
 p[style-name='Contributor-Headshot'] => img.Contributor-Headshot
+p[style-name='Description'] => p.Description
