@@ -48,11 +48,11 @@ def main( ):
     
     md = [ ]
 
-    md.append("This app assumes that you have already COPIED the contents of Professor Baechtel's OneDrive, specifically the `Rootstalk, Spring 2024` : `Digital-Versions` subdirectory, to YOUR OWN OneDrive and subsequently SYNC(hronized) that copy with your workstation.  ")
+    md.append("This app assumes that you have already COPIED the contents of Professor Baechtel's OneDrive, specifically the `Rootstalk` | `Next-Issue` | `Digital-Versions` subdirectory, to YOUR OWN OneDrive and subsequently SYNC(hronized) that copy with your workstation.  ")
 
-    md.append("To make a COPY, open the `Digital-Versions` directory in [Mark B's OneDrive](https://grinco-my.sharepoint.com/personal/baechtel_grinnell_edu/Documents/Forms/All.aspx?RootFolder=%2Fpersonal%2Fbaechtel%5Fgrinnell%5Fedu%2FDocuments%2FRootstalk%2FRootstalk%2C%20Spring%202024%2FDigital%2DVersions&FolderCTID=0x012000A6C31E30BF003640A2D7B60A01D853B7&View=%7BB15D8612%2DAF44%2D4DC9%2D8513%2D5154D5D906C9%7D), select one or more files and/or directories, then click `More v` and then `Move or copy`.   Make sure you select the `Copy this item to the selected folder`, then pick your own `OneDrive` and a destination folder (like `Digital-Versions`) within.")
+    md.append("To make a COPY, open the `Digital-Versions` directory in [Mark B's OneDrive](https://grinco-my.sharepoint.com/:f:/r/personal/baechtel_grinnell_edu/Documents/Rootstalk/Next-Issue/Digital-Versions?csf=1&web=1), select one or more files and/or directories, then click `More v` and then `Move or copy`.   Make sure you select the `Copy this item to the selected folder`, then pick your own `OneDrive` and a destination folder (like `Digital-Versions`) within.")
 
-    md.append("Now, to sync with your workstation open YOUR `OneDrive`, navigate to YOUR aforementioned subdirectory and click on the `Sync` option.  You may be prompted for your Grinnell login credentials before the directory is sync'd to your workstation.  On a Mac the sync'd local folder is likely to be `~/Library/CloudStorage/OneDrive-GrinnellCollege/Digital-Versions`, and that is the default path in this app.")
+    md.append("Now, to sync with your workstation open YOUR `OneDrive`, navigate to YOUR aforementioned subdirectory and click on the `Sync` option.  You may be prompted for your Grinnell login credentials before the directory is sync'd to your workstation.  On a Mac the sync'd local folder is likely to be `~/Library/CloudStorage/OneDrive-GrinnellCollege/Rootstalk/Next-Issue/Digital-Versions`, and that is the default path in this app.")
 
     for paragraph in md:
         st.write(paragraph)

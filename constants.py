@@ -14,6 +14,7 @@ year_term_pattern = r"(\d{4})-(spring|fall)"
 image_pattern = r".{3}\(.+/image/(.+)\)$"
 reference_pattern = r"\[(\d+)]"
 endnote_pattern = r"endnote-(\d+)"
+footnote_pattern = r"footnote-(\d+)"
 
 fm_template = '---\n' \
               'index: \n' \
@@ -26,7 +27,7 @@ fm_template = '---\n' \
               'categories: \n' \
               '  - category\n'  \
               'tags: \n' \
-              '  - \n'  \
+              '  - featured\n' \
               'header_image: \n' \
               '  filename: \n' \
               '  alt_text: \n' \
@@ -42,10 +43,13 @@ fm_template = '---\n' \
               'no_leaf_bug: false\n' \
               "---\n"
 
-default_path = '/Users/mcfatem/Library/CloudStorage/OneDrive-GrinnellCollege/Digital-Versions'
+default_path = '/Users/mcfatem/Library/CloudStorage/OneDrive-GrinnellCollege/Rootstalk/Next-Issue/Digital-Versions'
+
+destination_path = '/Users/mcfatem/GitHub/npm-rootstalk/content/volume-x-issue-1/'
 
 osc = "{{%"   # open_shortcode
 csc = "%}}"   # close_shortcode
+
 
 
 

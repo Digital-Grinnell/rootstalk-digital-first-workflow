@@ -4,6 +4,7 @@ import streamlit as st
 import inspect
 import textwrap
 import constants
+import frontmatter as front
 from st_pages import Page, show_pages, add_page_title
 
 
@@ -27,7 +28,8 @@ def menu(top_of_page=True):
     # Build the pages
     pages = [   Page("./pages/🏠_Home.py", "Home", "🏠"), 
                 Page("./pages/1_🦣_DOCX → Mammoth → HTML.py", "DOCX → 🦣 → HTML", "🦣"),
-                Page("./pages/2_🐍_HTML → Python → Markdown.py", "HTML → 🐍 → Markdown", "🐍")  ]
+                Page("./pages/2_🐍_HTML → Python → Markdown.py", "HTML → 🐍 → Markdown", "🐍"),  
+                Page("./pages/3_💾_Copy MD → Issue.py", "Copy MD → Issue", "💾" )  ]
     
     if top_of_page:
         add_page_title( )         # necessary for indentation
@@ -75,4 +77,41 @@ def show_code(main):
         sourcelines, _ = inspect.getsourcelines(main)
         st.code(textwrap.dedent("".join(sourcelines[1:])))
 
+
+# show_markdown( ) - Display converted Markdown at the end of the HTML->Python->Markdown run
+# -------------------------------------------------------------------------------
+def show_markdown( ):
+    """Showing the generated Markdown."""
+    if state('md_path'):
+        # Showing generated Markdown
+        st.markdown("## Generated Markdown")
+
+        with open(state('md_path'), 'r') as markdown:
+            content = markdown.read( )
+            data = front.loads(content)
+
+            if 'title' in data.keys( ):
+                st.markdown(f"#### Title: {data['title']}")
+            if 'byline' in data.keys( ):
+                st.markdown(f"**Byline**: {data['byline']}")
+            st.markdown(f"**File Name**: {data['index']}")
+            st.markdown(f"**Azure Directory**: {data['azure_dir']}")
+            if 'filename' in data['header_image'].keys( ):
+                st.markdown(f"**Hero Image**: {data['header_image']['filename']}")
+            if 'articleIndex' in data.keys( ):
+                st.markdown(f"**Article Index**: {data['articleIndex']}")
+
+            st.info("Frontmatter is reflected above and a crude dump of the Markdown content follows:  ")
+
+            # st.markdown("---")
+            st.markdown(data.content)    
+    else:
+        st.error("Nothing to show, there is no active Markdown file in this session.")
+
+
+# replace_space_with_underscore(string)     
+#   from https://www.shecodes.io/athena/12032-how-to-replace-spaces-with-dashes-in-a-python-string
+# ----------------------------------------------------------------------------------
+def replace_space_with_underscore(string):
+    return "_".join(string.split( ))
 

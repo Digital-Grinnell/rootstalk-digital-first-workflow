@@ -13,4 +13,5 @@ p[style-name='Fixed-Format'] => p.Fixed-Format
 p[style-name='Interview'] => p.Interview
 p[style-name='List Paragraph'] => p.List-Paragraph
 p[style-name='Caption'] => figcaption.Caption
+p[style-name='Audio-Caption'] => figcaption.Caption
 p[style-name='Attribution'] => p.Attribution

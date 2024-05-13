@@ -9,7 +9,6 @@ from azure.storage.blob import BlobServiceClient
 import constants as c
 from bs4 import BeautifulSoup
 from markdownify import markdownify as md
-import frontmatter as front
 
 
 # Page code goes here...
@@ -17,7 +16,7 @@ import frontmatter as front
 
 def main( ):
 
-    pattern = '^\/(.+)\/(.+)\.html$'
+    pattern = r"^\/(.+)\/(.+)\.html$"
 
     # Retrieve the Azure connection string for use with the application. The storage
     # connection string is stored in an environment variable on the machine
@@ -100,37 +99,6 @@ def main( ):
 #-----------------------------------------------------------------------
 
 
-# show_markdown( ) - Display converted Markdown at the end of the HTML->Python->Markdown run
-# -------------------------------------------------------------------------------
-def show_markdown( ):
-    """Showing the generated Markdown."""
-    if state('md_path'):
-        # Showing generated Markdown
-        st.markdown("## Generated Markdown")
-
-        with open(state('md_path'), 'r') as markdown:
-            content = markdown.read( )
-            data = front.loads(content)
-
-            if 'title' in data.keys( ):
-                st.markdown(f"#### Title: {data['title']}")
-            if 'byline' in data.keys( ):
-                st.markdown(f"**Byline**: {data['byline']}")
-            st.markdown(f"**File Name**: {data['index']}")
-            st.markdown(f"**Azure Directory**: {data['azure_dir']}")
-            if 'filename' in data['header_image'].keys( ):
-                st.markdown(f"**Hero Image**: {data['header_image']['filename']}")
-            if 'articleIndex' in data.keys( ):
-                st.markdown(f"**Article Index**: {data['articleIndex']}")
-
-            st.info("Frontmatter is reflected above and a crude dump of the Markdown content follows:  ")
-
-            # st.markdown("---")
-            st.markdown(data.content)    
-    else:
-        st.error("Nothing to show, there is no active Markdown file in this session.")
-
-
 
 # figcaption(element)
 # ----------------------------------------------------------------------
@@ -138,7 +106,7 @@ def figcaption(element):
     # Is the next element a <figcaption>?
     found = element.find_next('figcaption')
     if found:
-        c = found.contents[0]
+        c = ' '.join(map(str,found.contents))
         if c:
             caption = c.lstrip('0123456789').replace('"', "'")
             found.decompose( )  # remove the <figcaption> and return it's content
@@ -221,7 +189,7 @@ def do_image(i, path):
                             image_name = i.next.attrs['src']
 
         if image_name:
-            image_path = f"{a_name}-{image_name}"
+            image_path = f"{state('aName')}-{image_name}"
 
             # Upload the image to Azure
             url = upload_to_azure(image_path, path + "/" + image_name)
@@ -231,12 +199,13 @@ def do_image(i, path):
             # Now, deal with the alt text as a sibling
             sibling = i.nextSibling
             if sibling:
-                for a in sibling.attrs:
-                    if a == 'alt':
-                        alt = sibling.attrs['alt']
-                        if alt.endswith(remove_me):
-                            alt = alt[:-(len(remove_me))]
-                        sibling.decompose()  # remove the <img> alt
+                if hasattr(sibling, 'attrs'):
+                    for a in sibling.attrs:
+                        if a == 'alt':
+                            alt = sibling.attrs['alt']
+                            if alt.endswith(remove_me):
+                                alt = alt[:-(len(remove_me))]
+                            sibling.decompose( )  # remove the <img> alt
 
             caption = figcaption(i)
             markdown = f'{c.osc} figure_azure pid="{image_path}" caption="{caption}" alt="{alt}" {c.csc}'
@@ -273,6 +242,11 @@ def parse_post_mammoth_converted_html(html_file, path):
             article_type = soup.find("p", class_= "Article-Type")
             hero_image = soup.find("img", class_= "Hero-Image")
 
+            c_role = soup.findall("p", class_= "Contributor-Role")
+            c_name = soup.findall("p", class_= "Contributor-Name")
+            c_bio = soup.findall("p", class_= "Contributor-Bio")
+            c_headshot = soup.findall("img", class_= "Contributor-Headshot")
+
             # Drop found elements into the aFrontmatter and remove them from the soup...
 
             if title:
@@ -299,6 +273,36 @@ def parse_post_mammoth_converted_html(html_file, path):
                 frontmatter = frontmatter.replace("  filename: ", f"  filename: {image_path}")
 
                 # Upload the hero image to Azure
+                url = upload_to_azure(image_path, path + "/" + image_name)
+                if not url:
+                    st.error(f"Upload of image to {path}/{image_name} to Azure failed!")
+
+            # Contributor logic only expects ONE contributor for now, add more later!
+
+            if c_role:
+                frontmatter = frontmatter.replace("  - role: author", f"  - role: {c_role.contents[0]}")
+                c_role.decompose( )
+
+            if c_name:
+                frontmatter = frontmatter.replace("    name: ", f"    name: {c_name.contents[0]}")
+                c_name.decompose( )
+
+            if c_bio:
+                frontmatter = frontmatter.replace("    bio: ", f"    bio: \"{c_bio.contents[0]}\"")
+                c_bio.decompose( )
+
+            if c_headshot:
+                if 'src' in c_headshot.attrs:
+                    image_name = c_headshot.attrs['src']
+                    c_headshot.decompose( )       # get rid of the <img> tag         
+                else:    
+                    image_name = c_headshot.next.attrs['src']
+                    c_headshot.next.decompose( )  # get rid of the <img> tag
+
+                image_path = f"{state('aName')}-{image_name}"
+                frontmatter = frontmatter.replace("    headshot: ", f"    headshot: {image_path}")
+
+                # Upload the headshot image to Azure
                 url = upload_to_azure(image_path, path + "/" + image_name)
                 if not url:
                     st.error(f"Upload of image to {path}/{image_name} to Azure failed!")
@@ -353,13 +357,13 @@ def parse_post_mammoth_converted_html(html_file, path):
 
             videos = soup.find_all("p", class_ = "Video")
             for v in videos:
-                for c in v.contents:
-                    if isinstance(c, str):
-                        if c.startswith("{{% video"):         # find contents that opens with '{{% video'
-                            markdown = f"{c}"
+                for ct in v.contents:
+                    if isinstance(ct, str):
+                        if ct.startswith("{{% video"):         # find contents that opens with '{{% video'
+                            markdown = f"{ct}"
                             caption = figcaption(v)
                             if caption:
-                                markdown = markdown.replace(c.csc, f"caption=\"{caption}\" {c.csc}")
+                                markdown = f'{c.osc} caption=\"{caption}\" {c.csc}'
                             v.replace_with(f"{markdown} \n\n")  # replace entire tag with the {{% contents %}}
                             # Upload the video to Azure
                             # url = upload_to_azure(image_path, path + "/" + image_name)
@@ -372,7 +376,7 @@ def parse_post_mammoth_converted_html(html_file, path):
                             markdown = f"{ct}"
                             caption = figcaption(a)
                             if caption:
-                                markdown = markdown.replace(c.csc, f"caption=\"{caption}\" {c.csc}")
+                                markdown = f'{c.osc} caption=\"{caption}\" {c.csc}'
                             a.replace_with(f"{markdown} \n\n")  # replace entire tag with the {{% contents %}}
                             # Upload the audio to Azure
                             # url = upload_to_azure(image_path, path + "/" + image_name)
@@ -382,13 +386,33 @@ def parse_post_mammoth_converted_html(html_file, path):
             # {{% ref 1 %}}
 
             refs = soup.find_all("sup")
-            for r in refs:
-                number_string = r.next_element.contents[0]
-                m = re.match(c.reference_pattern, number_string)
-                if m:
-                    number = m.group(1)
-                    r.replace_with(f"{c.osc} ref {number} {c.csc} ")
-                    r.decompose( )
+
+            try:    # This section is problematic so it gets a try...except of its own!
+                for r in refs:
+                    if r.contents[0] == ' ':       # skip "empty" <sup> elements
+                        r.decompose( )
+                    else:
+                        number_string = r.contents[0].isdigit( )
+                        if not number_string:
+                            number_string = str(r.next_element.contents[0])
+                        else:
+                            number_string = str(r.contents[0])
+
+                        m = re.match(c.reference_pattern, number_string)
+                        if m:
+                            number = m.group(1)
+                            r.replace_with(f"{c.osc} ref {number} {c.csc} ")
+                            r.decompose( )
+                        elif number_string.isdigit( ):
+                            number = int(number_string)
+                            r.replace_with(f"{c.osc} ref {number} {c.csc} ")
+                            r.decompose( )
+                        else:
+                            st.warning(f"Non-numeric <sup> tag '{number_string}' was ignored.")    
+
+            except Exception as e:
+                st.exception(e)
+                pass
 
             # Sample endnotes:
             # <ol>
@@ -438,7 +462,6 @@ def parse_post_mammoth_converted_html(html_file, path):
 # This produces a new .md file with the same name.
 # ------------------------------------------------------------------------------
 def rootstalk_markdownify(filepath):
-    global a_name
 
     with open(filepath, "r") as html:
 

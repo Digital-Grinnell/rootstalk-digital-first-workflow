@@ -6,7 +6,7 @@ from utils import *
 import glob, os, subprocess, re 
 import constants as c
 
-pattern = "^\/(.+)\/(.+)\.docx$"
+pattern = r"^\/(.+)\/(.+)\.docx$"
 
 # Page code goes here...
 #-----------------------------------------------------------------------
@@ -43,8 +43,8 @@ def run_mammoth( ):
     
     # Now the form...
     with st.form("select_docx"):                                           # remove leading slash or 
-        selected = st.selectbox('Select a Word Document', filenames)[1:]   #   os.path.join will FAIL
-    
+        selected = st.selectbox('Select a Word Document', filenames)[1:]   #   os.path.join will FAIL!
+
         # Every form must have a submit button.
         submitted = st.form_submit_button("Submit")
         if submitted:
