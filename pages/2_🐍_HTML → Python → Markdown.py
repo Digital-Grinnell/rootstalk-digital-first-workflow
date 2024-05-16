@@ -336,24 +336,26 @@ def parse_post_mammoth_converted_html(html_file, path):
             for e in emphasized:
                 e.replace_with(f"_{e.contents[0].strip( )}_ \n\n")
 
-            normal = list(soup.find_all("p", class_ = None))
-            for n in reversed(normal):
-                target = ''.join(str(n))
-                if "#endnote" in target:    # remove endnote paragraphs from the end of our "normal" list
-                    normal.pop( )
-                else:
-                    break                   # stop when we hit a non-endnote paragraph
+            ## This leaf-bug logic breaks too many documents!
+            #
+            # normal = list(soup.find_all("p", class_ = None))
+            # for n in reversed(normal):
+            #     target = ''.join(str(n))
+            #     if "#endnote" in target:    # remove endnote paragraphs from the end of our "normal" list
+            #         normal.pop( )
+            #     else:
+            #         break                   # stop when we hit a non-endnote paragraph
 
-            last = len(normal) - 1        
+            # last = len(normal) - 1        
 
-            for i, n in enumerate(normal):
-                if i == 0:   # nothing to do here apart from dropcap on the First "Normal" paragraph
-                    p = f"{c.osc} dropcap {c.csc}{n.contents[0].strip( )}{c.osc} /dropcap {c.csc}"
-                    n.replace_with(f"{p} \n\n")
-                if i == last:   # add a leaf-bug to the last "Normal" paragraph
-                    target = ''.join(str(n))
-                    p = f"{target.strip( )}{c.osc} leaf-bug {c.csc}"
-                    n.replace_with(f"{p} \n\n")
+            # for i, n in enumerate(normal):
+            #     if i == 0:   # nothing to do here apart from dropcap on the First "Normal" paragraph
+            #         p = f"{c.osc} dropcap {c.csc}{n.contents[0].strip( )}{c.osc} /dropcap {c.csc}"
+            #         n.replace_with(f"{p} \n\n")
+            #     if i == last:   # add a leaf-bug to the last "Normal" paragraph
+            #         target = ''.join(str(n))
+            #         p = f"{target.strip( )}{c.osc} leaf-bug {c.csc}"
+            #         n.replace_with(f"{p} \n\n")
 
             pull_quotes = soup.find_all("p", class_ = "Intense-Quote")
             for q in pull_quotes:
@@ -363,8 +365,8 @@ def parse_post_mammoth_converted_html(html_file, path):
             for a in attributions:
                 a.replace_with(f"{c.osc} attribution 5 {c.csc}\n{a.contents[0].strip( )}\n{c.osc} /attribution {c.csc} \n\n")
 
-            images = soup.find_all("img")
-            # images = soup.find_all("img", class_ = "Article-Image")
+            # images = soup.find_all("img")
+            images = soup.find_all("img", class_ = "Article-Image")
             for i in images:
                 replacement = do_image(i, path)
                 if replacement:
