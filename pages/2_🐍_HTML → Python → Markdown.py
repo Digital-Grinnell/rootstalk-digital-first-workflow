@@ -170,6 +170,11 @@ def do_image(i, path):
 
     try:
 
+#        # Working Sample 1:  <img class="Article-Image"><img src="2.jpeg" /></img>
+#        # Broken Sample 2: <img class="Article-Image"> <img alt="Two men standing together in a store#
+#
+# Description automatically generated" src="12.jpeg" /></img>
+
         # Get the image name and build an Azure path...  if the <img> has no 'src' element look for it in the next element.
         if i.attrs:
             if len(i.attrs) > 0:
@@ -183,7 +188,7 @@ def do_image(i, path):
         # Get the image name and build an Azure path...  if the <img> has no 'src' element, skip it.
         if not image_name:
             if i.next:
-                if 'attrs' in i.next:
+                if i.next.attrs:
                     if len(i.next.attrs) > 0:
                         if 'src' in i.next.attrs:
                             image_name = i.next.attrs['src']
@@ -209,6 +214,9 @@ def do_image(i, path):
 
             caption = figcaption(i)
             markdown = f'{c.osc} figure_azure pid="{image_path}" caption="{caption}" alt="{alt}" {c.csc}'
+
+        else:
+            st.error(f"Whoa, got an image here with an unidentified <img> tag structre OR no name!")    
 
         return markdown
 
