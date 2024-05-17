@@ -108,7 +108,7 @@ def figcaption(element):
     if found:
         c = ' '.join(map(str,found.contents))
         if c:
-            caption = c.lstrip('0123456789').replace('"', "'")
+            caption = c.lstrip('0123456789').replace('"', "'").replace("\n", '')
             found.decompose( )  # remove the <figcaption> and return it's content
             return caption
 
@@ -170,10 +170,9 @@ def do_image(i, path):
 
     try:
 
-#        # Working Sample 1:  <img class="Article-Image"><img src="2.jpeg" /></img>
-#        # Broken Sample 2: <img class="Article-Image"> <img alt="Two men standing together in a store#
-#
-# Description automatically generated" src="12.jpeg" /></img>
+        # Working Sample 1:  <img class="Article-Image"><img src="2.jpeg" /></img>
+        # Broken Sample 2: <img class="Article-Image"> <img alt="Two men standing together in a...
+        #   The space between <img> tags is "next" and unaccounted for...
 
         # Get the image name and build an Azure path...  if the <img> has no 'src' element look for it in the next element.
         if i.attrs:
@@ -185,7 +184,9 @@ def do_image(i, path):
                     if alt.endswith(remove_me):
                         alt = alt[:-(len(remove_me))]
 
-        # Get the image name and build an Azure path...  if the <img> has no 'src' element, skip it.
+        # Get the image name and build an Azure path...  if the <img> has no 'src' element 
+        #   look for one in the "next" <img> element.  Be sure to account for 
+        #   any "empty" elements between the two <img> tags!  See remove_empty( )!
         if not image_name:
             if i.next:
                 if i.next.attrs:
@@ -225,6 +226,27 @@ def do_image(i, path):
         return False
 
 
+# remove_empty( )
+# -----------------------------------------------------------------------------
+def remove_empty(soup):
+    # Remove all non-essential "empty" tags and internal new-lines!   
+    broth = BeautifulSoup( )
+    for x in soup.find_all( ):
+        if len(x.get_text(strip=True)) > 0 or x.name in ['br', 'img']:         # From https://stackoverflow.com/questions/33500888/how-to-remove-tags-that-have-no-content
+            if x.child is None:    # From https://stackoverflow.com/questions/14550288/how-do-i-remove-linebreaks-only-if-they-occur-inside-html-tags
+                try:
+                    x.child.contents[0].replace('\n', '')
+                except AttributeError:
+                    pass
+            else:
+                try:
+                    x.contents[0].replace('\n', '')
+                except AttributeError:
+                    pass
+            broth.append(x)
+    return broth
+
+
 # Parse the Mammoth-converted HTML to find key/frontmatter elements from our
 #    rootstalk-custom-style.map file.  Substitute them into `aFrontmatter`.
 #
@@ -243,6 +265,7 @@ def parse_post_mammoth_converted_html(html_file, path):
         with open(html_file, 'r') as h:
             html_string = h.read( ).replace('“','"').replace('”','"')     # remove smart quotes!
             soup = BeautifulSoup(html_string, "html.parser")
+            soup = remove_empty(soup)   # remove empty non-essential tags and embedded new-lines!
 
             # Find key tags by CSS class
             title = soup.find("h1", class_= "Primary-Title")
@@ -343,27 +366,6 @@ def parse_post_mammoth_converted_html(html_file, path):
             emphasized = soup.find_all("p", class_ = "Emphasized-Paragraph")
             for e in emphasized:
                 e.replace_with(f"_{e.contents[0].strip( )}_ \n\n")
-
-            ## This leaf-bug logic breaks too many documents!
-            #
-            # normal = list(soup.find_all("p", class_ = None))
-            # for n in reversed(normal):
-            #     target = ''.join(str(n))
-            #     if "#endnote" in target:    # remove endnote paragraphs from the end of our "normal" list
-            #         normal.pop( )
-            #     else:
-            #         break                   # stop when we hit a non-endnote paragraph
-
-            # last = len(normal) - 1        
-
-            # for i, n in enumerate(normal):
-            #     if i == 0:   # nothing to do here apart from dropcap on the First "Normal" paragraph
-            #         p = f"{c.osc} dropcap {c.csc}{n.contents[0].strip( )}{c.osc} /dropcap {c.csc}"
-            #         n.replace_with(f"{p} \n\n")
-            #     if i == last:   # add a leaf-bug to the last "Normal" paragraph
-            #         target = ''.join(str(n))
-            #         p = f"{target.strip( )}{c.osc} leaf-bug {c.csc}"
-            #         n.replace_with(f"{p} \n\n")
 
             pull_quotes = soup.find_all("p", class_ = "Intense-Quote")
             for q in pull_quotes:
@@ -540,99 +542,6 @@ def clean_up(markdown):
     clean = re.sub(pattern, r'\1', markdown, re.MULTILINE)
 
     return clean
-
-
-# --------------------------------------------------------------------------------
-# def rootstalk_azure_media(year, term, filepath):
-#   # ytmd = "{}-{}.md".format(year, term, year, term)
-#   ytmd = filepath.replace(".html", ".md")
-
-#   # Open the issue's year-term.md file...
-#   logging.info("Attempting to open markdown file: " + ytmd)
-#   with open(ytmd, "r") as issue_md:
-#     # azure_path = "{}-{}-azure.md".format(year, term)
-#     azure_path = filepath.replace(".html", "-azure.md")
-
-#     logging.info("Creating new Azure .md file at '{}'.".format(azure_path))
-
-#     # Open and write a new year-term-azure.md file...
-#     with open(azure_path, "w") as azure_md:
-#       lines = issue_md.readlines()
-
-#       # Clean-up...
-#       # - translate any year-term-web-resources folder references to new Azure format.
-#       # - remove any line that entirely matches the pattern:  ^.+ | .+$
-
-#       for line in lines:
-#         match_image = re.match(image_pattern, line)
-#         match_header = re.match(header_pattern, line)
-#         if match_image:  # transform image references
-#           new_line = replacement.replace("xPIDx", match_image.group(1))
-#           print(new_line, end='\n', file=azure_md)
-#         elif not match_header:  # skip page headers
-#           print(line, file=azure_md)  # write the line out
-
-#   # Now, remove all repeated blank lines (reduces whitespace)
-#   with open(azure_path, "r+") as azure_md:
-#     contents = azure_md.read( )
-#     # stripped = re.sub(r'^$\n', '', contents, flags=re.MULTILINE)
-#     stripped = re.sub(r'\n\s*\n', '\n\n', contents)
-#     azure_md.seek(0)  # rewind the file
-#     azure_md.writelines(stripped)  # write the stripped version
-
-
-# # ----------------------------------------------------------------------------------
-# def rootstalk_make_articles(year, term, filepath):
-#   ytyml = filepath.replace(".html", ".yml")
-
-#   # Look for a year-term.yml file...
-#   if not os.path.exists(ytyml):
-#     logging.error("ERROR: No {} YAML file found! You need to create this file if you wish to proceed with the {}-{} issue!".format(ytyml, year, term))
-#   else:
-#     logging.info("Processing the {} file.".format(ytyml))
-
-#     # Check for corresponding -azure.md file in the same directory
-#     azure_md = filepath.replace(".html", "-azure.md")
-#     if not os.path.exists(azure_md):
-#       logging.error(
-#             "ERROR: No Azure-formatted markdown file '{}' found! You may need to run the 'rootstalk_azure_media' scripts before proceeding.".format(
-#               azure_md))
-
-#     # Everything is in place, read the year-term.yml file...
-#     with open(ytyml, "r") as stream:
-#       try:
-#         yml = yaml.safe_load(stream)
-#       except yaml.YAMLError as exc:
-#         sys.exit(exc)
-
-#       for key, value in yml.items():
-#         logging.info("{}: {}".format(key, value))
-
-#       # Read each article name/index and create a new article_index.md file if one does not already exist
-#       for name in yml["articles"]:
-#         web_resources = '-web-resources/{}.md'.format(name)
-#         md_path = filepath.replace(".html", web_resources)
-#         logging.info("Creating article markdown file '{}'...".format(md_path))
-#         if os.path.exists(md_path):
-#           logging.warning(
-#                 "WARNING: Markdown file '{}' already exists and will not be replaced! Be sure to move or remove the existing file if you wish to generate a new copy.".format(
-#                   md_path))
-#         else:
-#           with open(azure_md, "r") as md:
-#             issue_md_content = md.read()
-
-#             # Customize the front matter before inserting it...
-#             fm = frontmatter.replace("index: ", "index: {}".format(name))
-#             fm = fm.replace("articleIndex: ", "articleIndex: {}".format(aIndex))
-#             fm = fm.replace("azure_dir: ", "azure_dir: rootstalk-{}-{}".format(year, term))
-#             fm = fm.replace("date: ", "date: '{}'".format(datetime.now().strftime('%d/%m/%Y %H:%M:%S')))
-
-#             aIndex += 1
-
-#             # Write the front matter and content to the article.md file
-#             with open(md_path, "w") as article_md:
-#               print(fm, file=article_md)
-#               print(issue_md_content, file=article_md)
 
 
 # Config the page and execute it but not when loading!
